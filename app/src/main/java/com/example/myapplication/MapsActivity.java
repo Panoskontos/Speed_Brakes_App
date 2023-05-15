@@ -64,9 +64,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         latitudeArray = intent.getDoubleArrayExtra("LATITUDE_ARRAY_EXTRA");
         longitudeArray = intent.getDoubleArrayExtra("LONGITUDE_ARRAY_EXTRA");
 
+        for (int i = 0; i < latitudeArray.length; i++) {
+            LatLng location = new LatLng(latitudeArray[i], longitudeArray[i]);
+            mMap.addMarker(new MarkerOptions().position(location).title("Brake Marker"));
+        }
 
-        LatLng sydney = new LatLng(latitude, longitude);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Brake Marker"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12f));
+//        pick a place to start
+        LatLng start = new LatLng(latitudeArray[latitudeArray.length-1], longitudeArray[latitudeArray.length-1]);
+//        LatLng sydney = new LatLng(latitude, longitude);
+//        mMap.addMarker(new MarkerOptions().position(sydney).title("Brake Marker"));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 12f));
     }
 }
