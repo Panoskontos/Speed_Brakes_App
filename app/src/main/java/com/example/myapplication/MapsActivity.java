@@ -73,6 +73,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng start = new LatLng(latitudeArray[latitudeArray.length-1], longitudeArray[latitudeArray.length-1]);
 //        LatLng sydney = new LatLng(latitude, longitude);
 //        mMap.addMarker(new MarkerOptions().position(sydney).title("Brake Marker"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 12f));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(start, 14f));
     }
 }
