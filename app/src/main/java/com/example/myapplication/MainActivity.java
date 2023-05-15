@@ -5,8 +5,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
@@ -28,6 +30,10 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     LocationManager locationManager;
     Location previousLocation;
     SQLiteDatabase sqLiteDatabase;
+
+    double latitude; // Your latitude
+    double longitude; // Your longitude
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,7 +41,7 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
 
 
         //        create or open database
-        sqLiteDatabase = openOrCreateDatabase("DB2.db", MODE_PRIVATE, null);
+        sqLiteDatabase = openOrCreateDatabase("DB3.db", MODE_PRIVATE, null);
         sqLiteDatabase.execSQL("CREATE TABLE IF NOT EXISTS " + "LOCATION" + "(" +
                 "latitude" + " TEXT PRIMARY KEY," +
                 "longtitude" + " TEXT)");
@@ -63,8 +69,33 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     }
 
     public void maps(View view){
-        startActivity(new Intent(this, MapsActivity.class));
+
+        latitude = 37.758898;
+        longitude = -3.83515;
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra("LATITUDE_EXTRA", latitude);
+        intent.putExtra("LONGITUDE_EXTRA", longitude);
+        startActivity(intent);
     }
+
+    private void showMessage(String title, String msg){
+        new AlertDialog.Builder(this)
+                .setCancelable(true)
+                .setTitle(title)
+                .setMessage(msg)
+                .show();
+    }
+
+    public void select(View view){
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM LOCATION",null);
+        StringBuilder stringBuilder = new StringBuilder();
+        while(cursor.moveToNext()){
+            stringBuilder.append("lat: ").append(cursor.getString(0)).append("\n");
+            stringBuilder.append("long: ").append(cursor.getString(1)).append("\n\n");
+        }
+        showMessage("Locations", stringBuilder.toString());
+    }
+
 
     @Override
     public void onLocationChanged(@NonNull Location location) {
@@ -98,8 +129,8 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
             TextView speedDifferenceText = findViewById(R.id.textView7);
             speedDifferenceText.setText(String.format("%.2f km/h", speedDifferenceKilometersPerHour));
 
-//            losing 5 km per sec is considered a brake
-            if(speedDifferenceKilometersPerHour<-1){
+//            losing 10 km per sec is considered a brake
+            if(speedDifferenceKilometersPerHour<-10){
                 System.out.println("Brake");
                 System.out.println(previousLocation.getLatitude()+","+previousLocation.getLongitude());
                 sqLiteDatabase.execSQL("INSERT OR IGNORE INTO LOCATION VALUES(?,?)",new String[] {String.valueOf(previousLocation.getLatitude()), String.valueOf(previousLocation.getLongitude())});
