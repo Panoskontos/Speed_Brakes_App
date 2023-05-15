@@ -18,6 +18,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity  implements LocationListener {
 
@@ -75,6 +77,37 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("LATITUDE_EXTRA", latitude);
         intent.putExtra("LONGITUDE_EXTRA", longitude);
+
+        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM LOCATION",null);
+        ArrayList<MyLocation> locationList = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            do {
+                int latitudeIndex = cursor.getColumnIndex("latitude");
+                int longitudeIndex = cursor.getColumnIndex("longtitude");
+                double lat = cursor.getDouble(latitudeIndex);
+                double longi = cursor.getDouble(longitudeIndex);
+                MyLocation location = new MyLocation(lat, longi);
+                locationList.add(location);
+                System.out.println(location);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        // Create separate arrays for latitude and longitude
+        double[] latitudeArray = new double[locationList.size()];
+        double[] longitudeArray = new double[locationList.size()];
+//        / Extract latitude and longitude values from the locationList
+        for (int i = 0; i < locationList.size(); i++) {
+            MyLocation location = locationList.get(i);
+            latitudeArray[i] = location.getLatitude();
+            longitudeArray[i] = location.getLongitude();
+        }
+        System.out.println(latitudeArray);
+        System.out.println(longitudeArray);
+
+        intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
+        intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+
         startActivity(intent);
     }
 

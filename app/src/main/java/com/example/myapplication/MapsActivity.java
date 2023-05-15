@@ -3,6 +3,7 @@ package com.example.myapplication;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -13,6 +14,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.myapplication.databinding.ActivityMapsBinding;
 
+import java.util.ArrayList;
+
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
@@ -20,6 +23,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     double latitude;
     double longitude;
+
+    double[] latitudeArray;
+    double[] longitudeArray;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,13 +55,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap = googleMap;
 
         Intent intent = getIntent();
-
         latitude = intent.getDoubleExtra("LATITUDE_EXTRA", 0.0);
         longitude = intent.getDoubleExtra("LONGITUDE_EXTRA", 0.0);
+//        cursor = String.valueOf(intent.putExtra("LONGITUDE_CURSOR", ""));
+//        System.out.println(cursor);
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(latitude, longitude);
 
+        latitudeArray = intent.getDoubleArrayExtra("LATITUDE_ARRAY_EXTRA");
+        longitudeArray = intent.getDoubleArrayExtra("LONGITUDE_ARRAY_EXTRA");
+
+
+        LatLng sydney = new LatLng(latitude, longitude);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Brake Marker"));
-        mMap.animateCamera(CameraUpdateFactory.newLatLng(sydney));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(sydney, 12f));
     }
 }
