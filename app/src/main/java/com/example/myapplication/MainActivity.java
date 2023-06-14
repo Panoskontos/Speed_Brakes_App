@@ -189,8 +189,27 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
             if(speedDifferenceKilometersPerHour<-10){
                 System.out.println("Brake");
                 System.out.println(previousLocation.getLatitude()+","+previousLocation.getLongitude());
-                sqLiteDatabase.execSQL("INSERT OR IGNORE INTO LOCATION VALUES(?,?)",new String[] {String.valueOf(previousLocation.getLatitude()), String.valueOf(previousLocation.getLongitude())});
-                Toast.makeText(this, "location Added", Toast.LENGTH_SHORT).show();
+//                sqLiteDatabase.execSQL("INSERT OR IGNORE INTO LOCATION VALUES(?,?)",new String[] {String.valueOf(previousLocation.getLatitude()), String.valueOf(previousLocation.getLongitude())});
+//                Toast.makeText(this, "location Added", Toast.LENGTH_SHORT).show();
+
+
+//                adding brakes
+                firestore = FirebaseFirestore.getInstance();
+                Map<String,Object> locationF = new HashMap<>();
+                locationF.put("latitude",String.valueOf(previousLocation.getLatitude()));
+                locationF.put("longitude",String.valueOf(previousLocation.getLongitude()));
+                firestore.collection("locationsBrakes").add(locationF).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Toast.makeText(getApplicationContext(), "location Added", Toast.LENGTH_LONG).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+                    }
+                });
+
 
             };
 
