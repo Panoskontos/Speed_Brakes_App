@@ -18,7 +18,14 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity  implements LocationListener {
@@ -32,6 +39,8 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     LocationManager locationManager;
     Location previousLocation;
     SQLiteDatabase sqLiteDatabase;
+
+    FirebaseFirestore firestore;
 
     double latitude; // Your latitude
     double longitude; // Your longitude
@@ -48,6 +57,24 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
                 "latitude" + " TEXT PRIMARY KEY," +
                 "longtitude" + " TEXT)");
         sqLiteDatabase.execSQL("INSERT OR IGNORE INTO LOCATION VALUES('0','0')");
+
+//        firestone
+        firestore = FirebaseFirestore.getInstance();
+        Map<String,Object> user = new HashMap<>();
+        user.put("first","easy");
+        user.put("last","hard");
+        user.put("description","good student");
+        firestore.collection("users").add(user).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+            @Override
+            public void onSuccess(DocumentReference documentReference) {
+                Toast.makeText(getApplicationContext(), "Success", Toast.LENGTH_LONG).show();
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+            }
+        });
 
         locationtxtlat = findViewById(R.id.textView);
         locationtxtlong = findViewById(R.id.textView8);
@@ -134,11 +161,7 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     public void onLocationChanged(@NonNull Location location) {
 
 //        / calculate the time elapsed since the location was obtained
-//        long timeElapsed = System.currentTimeMillis() - location.getTime();
-////        dv/dt and save location
-//        locationtxt.setText(location.getLatitude()+","+location.getLongitude());
-//        speed.setText(location.getSpeed()+"");
-//        time.setText(location.getTime()+"");
+//
         long timeElapsed = System.currentTimeMillis() - location.getTime();
         // display the current location data
         locationtxtlat.setText(location.getLatitude()+"");
