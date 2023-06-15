@@ -283,6 +283,7 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
                 Map<String,Object> locationF = new HashMap<>();
                 locationF.put("latitude",String.valueOf(previousLocation.getLatitude()));
                 locationF.put("longitude",String.valueOf(previousLocation.getLongitude()));
+                locationF.put("timestamp",String.valueOf(previousLocation.getTime()));
                 firestore.collection("locationsBrakes").add(locationF).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
@@ -305,11 +306,12 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
 //                Toast.makeText(this, "location Added", Toast.LENGTH_SHORT).show();
 
 
-//                adding brakes
+//                adding acceleration
                 firestore = FirebaseFirestore.getInstance();
                 Map<String,Object> locationF = new HashMap<>();
                 locationF.put("latitude",String.valueOf(previousLocation.getLatitude()));
                 locationF.put("longitude",String.valueOf(previousLocation.getLongitude()));
+                locationF.put("timestamp",String.valueOf(previousLocation.getTime()));
                 firestore.collection("locationsAcceleration").add(locationF).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
