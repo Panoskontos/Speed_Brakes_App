@@ -138,6 +138,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="select"
+        android:visibility="gone"
         android:text="SHOW DB"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -151,13 +152,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="maps"
-        android:text="SHOW on MAPS"
+        android:text="SHOW BRAKES"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.817"
+        app:layout_constraintHorizontal_bias="0.472"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.058" />
+        app:layout_constraintVertical_bias="0.613" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="maps2"
+        android:text="SHOW ACCELARATIONS"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.475"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.727" />
 
     <TextView
         android:id="@+id/textView9"

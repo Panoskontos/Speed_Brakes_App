@@ -28,6 +28,8 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,44 +121,84 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
 
     public void maps(View view){
 
-        latitude = 37.758898;
-        longitude = -3.83515;
-        Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra("LATITUDE_EXTRA", latitude);
-        intent.putExtra("LONGITUDE_EXTRA", longitude);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM LOCATION",null);
-        ArrayList<MyLocation> locationList = new ArrayList<>();
-        if (cursor.moveToFirst()) {
-            do {
-                int latitudeIndex = cursor.getColumnIndex("latitude");
-                int longitudeIndex = cursor.getColumnIndex("longtitude");
-                double lat = cursor.getDouble(latitudeIndex);
-                double longi = cursor.getDouble(longitudeIndex);
-                MyLocation location = new MyLocation(lat, longi);
-                locationList.add(location);
-                System.out.println(location);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
+        db.collection("locationsBrakes")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Double> latitudeList = new ArrayList<>();
+                            ArrayList<Double> longitudeList = new ArrayList<>();
 
-        // Create separate arrays for latitude and longitude
-        double[] latitudeArray = new double[locationList.size()];
-        double[] longitudeArray = new double[locationList.size()];
-//        / Extract latitude and longitude values from the locationList
-        for (int i = 0; i < locationList.size(); i++) {
-            MyLocation location = locationList.get(i);
-            latitudeArray[i] = location.getLatitude();
-            longitudeArray[i] = location.getLongitude();
-        }
-        System.out.println(latitudeArray);
-        System.out.println(longitudeArray);
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                double latitude = Double.parseDouble(document.getString("latitude"));
+                                double longitude = Double.parseDouble(document.getString("longitude"));
+                                latitudeList.add(latitude);
+                                longitudeList.add(longitude);
+                            }
 
-        intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
-        intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+                            double[] latitudeArray = new double[latitudeList.size()];
+                            double[] longitudeArray = new double[longitudeList.size()];
 
-        startActivity(intent);
+                            for (int i = 0; i < latitudeList.size(); i++) {
+                                latitudeArray[i] = latitudeList.get(i);
+                                longitudeArray[i] = longitudeList.get(i);
+                            }
+
+                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                            intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
+                            intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+
+                            startActivity(intent);
+                        } else {
+                            Log.d("Firestore", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
     }
+
+    public void maps2(View view){
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("locationsAcceleration")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Double> latitudeList = new ArrayList<>();
+                            ArrayList<Double> longitudeList = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                double latitude = Double.parseDouble(document.getString("latitude"));
+                                double longitude = Double.parseDouble(document.getString("longitude"));
+                                latitudeList.add(latitude);
+                                longitudeList.add(longitude);
+                            }
+
+                            double[] latitudeArray = new double[latitudeList.size()];
+                            double[] longitudeArray = new double[longitudeList.size()];
+
+                            for (int i = 0; i < latitudeList.size(); i++) {
+                                latitudeArray[i] = latitudeList.get(i);
+                                longitudeArray[i] = longitudeList.get(i);
+                            }
+
+                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                            intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
+                            intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+
+                            startActivity(intent);
+                        } else {
+                            Log.d("Firestore", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
 
     private void showMessage(String title, String msg){
         new AlertDialog.Builder(this)
@@ -167,13 +209,36 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     }
 
     public void select(View view){
-        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM LOCATION",null);
-        StringBuilder stringBuilder = new StringBuilder();
-        while(cursor.moveToNext()){
-            stringBuilder.append("lat: ").append(cursor.getString(0)).append("\n");
-            stringBuilder.append("long: ").append(cursor.getString(1)).append("\n\n");
-        }
-        showMessage("Locations", stringBuilder.toString());
+//        Cursor cursor = sqLiteDatabase.rawQuery("SELECT * FROM LOCATION",null);
+//        StringBuilder stringBuilder = new StringBuilder();
+//        while(cursor.moveToNext()){
+//            stringBuilder.append("lat: ").append(cursor.getString(0)).append("\n");
+//            stringBuilder.append("long: ").append(cursor.getString(1)).append("\n\n");
+//        }
+//        showMessage("Locations", stringBuilder.toString());
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("locationsBrakes")
+                .get()
+                .addOnCompleteListener((OnCompleteListener<QuerySnapshot>) task -> {
+                    if (task.isSuccessful()) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+//                            Map<String, Object> location = document.getData();
+                            String latitude = document.getString("latitude");
+                            String longitude = document.getString("longitude");
+                            stringBuilder.append("lat: ").append(latitude).append("\n");
+                            stringBuilder.append("long: ").append(longitude).append("\n\n");
+                            // Display the location data
+//                            Log.d("Firestore", "Location: " + location)
+                        }
+                        showMessage("Locations of Brakes", stringBuilder.toString());
+
+                    } else {
+//                        Log.d("Firestore", "Error getting documents: ", task.getException());
+                            showMessage("error","task wasn't successfull");
+                    }
+                });
     }
 
 
