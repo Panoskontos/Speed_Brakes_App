@@ -158,12 +158,50 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
                     }
                 });
     }
-
     public void maps2(View view){
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("locationsAcceleration")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Double> latitudeList = new ArrayList<>();
+                            ArrayList<Double> longitudeList = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                double latitude = Double.parseDouble(document.getString("latitude"));
+                                double longitude = Double.parseDouble(document.getString("longitude"));
+                                latitudeList.add(latitude);
+                                longitudeList.add(longitude);
+                            }
+
+                            double[] latitudeArray = new double[latitudeList.size()];
+                            double[] longitudeArray = new double[longitudeList.size()];
+
+                            for (int i = 0; i < latitudeList.size(); i++) {
+                                latitudeArray[i] = latitudeList.get(i);
+                                longitudeArray[i] = longitudeList.get(i);
+                            }
+
+                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                            intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
+                            intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+
+                            startActivity(intent);
+                        } else {
+                            Log.d("Firestore", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+    public void maps3(View view){
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("locationsMaxSpeed")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -269,6 +307,29 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
             float speedDifferenceKilometersPerHour = speedDifference * 3.6f;
             TextView speedDifferenceText = findViewById(R.id.textView7);
             speedDifferenceText.setText(String.format("%.2f km/h", speedDifferenceKilometersPerHour));
+
+
+//          max speed limit
+            float speed_per_hour = location.getSpeed() * 3.6f;
+            if(speed_per_hour>90){
+                firestore = FirebaseFirestore.getInstance();
+                Map<String,Object> locationF = new HashMap<>();
+                locationF.put("latitude",String.valueOf(location.getLatitude()));
+                locationF.put("longitude",String.valueOf(location.getLongitude()));
+                locationF.put("timestamp",String.valueOf(location.getTime()));
+                locationF.put("speed",String.valueOf(location.getTime()));
+                firestore.collection("locationsMaxSpeed").add(locationF).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Toast.makeText(getApplicationContext(), "location Speed Limit Break", Toast.LENGTH_LONG).show();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
 
 //            losing 10 km per sec is considered a brake
             if(speedDifferenceKilometersPerHour<-10){
