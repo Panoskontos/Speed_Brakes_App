@@ -10,6 +10,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -36,7 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class MainActivity extends AppCompatActivity  implements LocationListener {
+public class MainActivity extends AppCompatActivity  implements LocationListener, SensorEventListener {
 
     TextView locationtxtlat;
     TextView locationtxtlong;
@@ -53,10 +56,15 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
     double latitude; // Your latitude
     double longitude; // Your longitude
 
+    float last_x, last_y, last_z;
+    long lastUpdate;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
 
         // Get the Intent that started this activity and the user id
         Intent intent = getIntent();
@@ -291,6 +299,9 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
         locationtxtlong.setText(location.getLongitude()+"");
         speed.setText(location.getSpeed()* 3.6f+"");
         time.setText(location.getTime()+"");
+
+
+
         // update the previous location and display its time
         if (previousLocation != null) {
             long timeDifference = location.getTime() - previousLocation.getTime();
@@ -392,4 +403,55 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
 //        assign the location to previous location
         previousLocation = location;
     }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // we're not using it.
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Sensor sensor = event.sensor;
+        if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            long curTime = System.currentTimeMillis();
+            if ((curTime - lastUpdate) > 100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z)/ diffTime * 10000;
+                float speedKMH = (float) (speed * 3.6);
+
+                if (speedKMH > 1) {
+                    // A pothole was detected! Do something!
+                    firestore = FirebaseFirestore.getInstance();
+                    Map<String,Object> potholeData = new HashMap<>();
+                    potholeData.put("latitude",String.valueOf(previousLocation.getLatitude()));
+                    potholeData.put("longitude",String.valueOf(previousLocation.getLongitude()));
+                    potholeData.put("timestamp",String.valueOf(previousLocation.getTime()));
+                    firestore.collection("potholes").add(potholeData).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        @Override
+                        public void onSuccess(DocumentReference documentReference) {
+                            Toast.makeText(getApplicationContext(), "Pothole Detected and Added", Toast.LENGTH_LONG).show();
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(getApplicationContext(), "Failure", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+
+                last_x = x;
+                last_y = y;
+                last_z = z;
+            }
+        }
+    }
+
+
+
 }
