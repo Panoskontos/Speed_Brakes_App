@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -13,6 +14,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -115,6 +117,12 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
 
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
+        //        sensor register
+        SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        Sensor accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+
     }
 
     public void gps(View view) {
@@ -210,6 +218,47 @@ public class MainActivity extends AppCompatActivity  implements LocationListener
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
         db.collection("locationsMaxSpeed")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            ArrayList<Double> latitudeList = new ArrayList<>();
+                            ArrayList<Double> longitudeList = new ArrayList<>();
+
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                double latitude = Double.parseDouble(document.getString("latitude"));
+                                double longitude = Double.parseDouble(document.getString("longitude"));
+                                latitudeList.add(latitude);
+                                longitudeList.add(longitude);
+                            }
+
+                            double[] latitudeArray = new double[latitudeList.size()];
+                            double[] longitudeArray = new double[longitudeList.size()];
+
+                            for (int i = 0; i < latitudeList.size(); i++) {
+                                latitudeArray[i] = latitudeList.get(i);
+                                longitudeArray[i] = longitudeList.get(i);
+                            }
+
+                            Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+                            intent.putExtra("LATITUDE_ARRAY_EXTRA", latitudeArray);
+                            intent.putExtra("LONGITUDE_ARRAY_EXTRA", longitudeArray);
+
+                            startActivity(intent);
+                        } else {
+                            Log.d("Firestore", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+
+    public void potholes(View view){
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("potholes")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
